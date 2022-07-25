@@ -18,10 +18,13 @@ namespace util
 		return size;
 	}
 
-	struct file_size {
+	// some_ostream << file_size{ some_int } << ...
+	struct file_size
+	{
 		size_t size{};
 	private:
-		friend std::ostream& operator<<(std::ostream& os, const file_size fs) {
+		friend std::ostream& operator<<(std::ostream& os, const file_size fs)
+		{
 			size_t i = 0;
 			double mantissa = double(fs.size);
 			for (; mantissa >= 1024.; mantissa /= 1024., ++i) {}

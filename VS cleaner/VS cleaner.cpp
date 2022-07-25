@@ -9,28 +9,20 @@ Automate cleaning up the hundreds of megs of VS temp and build files.
 
 #include "utility.hpp"
 
-int main()
+void vs_cleaner()
 {
 	namespace fs = std::filesystem;
 
-	fs::path dir = fs::current_path();
-	std::cout << "Launched from " << dir << '\n';
+	const fs::path dir = fs::current_path();
 
-	// Move upward in search of a C++ folder
-	while (dir.has_parent_path() && dir.filename() != "C++")
-	{
-		dir = dir.parent_path();
-	}
-
-	if (dir.filename() == "C++")
-	{
-		std::cout << "Cleaning from " << dir << '\n';
-	}
-	else
+	// make sure that our location contains "C++" somewhere in the path
+	if (!dir.string().contains("C++"))
 	{
 		std::cout << "Could not find C++ directory.\n";
-		return 0;
+		return;
 	}
+
+	std::cout << "Running from " << dir << '\n';
 
 	size_t erased = 0, erased_bytes = 0;
 
@@ -55,22 +47,27 @@ int main()
 		// ...and then erase from the cached path.
 		try
 		{
-
 			fs::remove_all(path);
 
 			erased += 1;
 			erased_bytes += folder_size;
-			std::cout << "Erased ";
 		}
 		catch (...)
 		{
-			std::cout << "Couldn't erase ";
+			std::cout << "Failed to erase from " << path << '\n';
+			continue;
 		}
 
-		std::cout << path << ", " << util::file_size{ folder_size } << '\n';
+		std::cout << "Erased " << path << ", " << util::file_size{ folder_size } << '\n';
 	}
 
-	std::cout << "Erased " << util::file_size{ erased_bytes } << " in " << erased << " directories.\n";
+	std::cout << "Erased " << util::file_size{ erased_bytes } << " in " << erased << (erased == 1 ? " directory" : " directories") << ".\n";
+}
+
+int main()
+{
+	vs_cleaner();
+
 	std::cout << "(press any key to continue)\n";
 	std::cin.ignore();
 }
